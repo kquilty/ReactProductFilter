@@ -1,0 +1,12 @@
+body {
+    font-family: sans-serif;
+    margin: 20px;
+    padding: 0;
+}
+.product-table {
+    border-collapse: collapse;
+}
+.product-table th, td{
+    border: 1px solid black;
+    padding: 5px;
+}
