@@ -129,18 +129,21 @@ function ProductRow({product, searchText}) {
     ){
         // Highlight it
         const indexStart = highlightedName.toLowerCase().indexOf(searchText.toLowerCase());
-        const indexEnd = indexStart + searchText.length;
-        highlightedName = highlightedName.substring(0, indexStart) 
-            + '<span style="background-color: yellow; border: 1px solid silver">'
-            + highlightedName.substring(indexStart, indexStart + searchText.length)
-            + '</span>'
-            + highlightedName.substring(indexEnd);
+        highlightedName = (
+            <div>
+                {highlightedName.substring(0, indexStart)} 
+                <span className="highlighted-text">
+                    {highlightedName.substring(indexStart, indexStart + searchText.length)}
+                </span>
+                {highlightedName.substring(indexStart + searchText.length)}
+            </div>
+        );
     }
 
     return (
         <tr>
             <td style={{color: product.stocked ? 'black' : 'red'}}>
-                <div dangerouslySetInnerHTML={{ __html: highlightedName }} />
+                {highlightedName}
             </td>   
             <td>
                 {product.price}

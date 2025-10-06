@@ -15,3 +15,7 @@ body {
     display: flex; 
     align-items: center;
 }
+.highlighted-text {
+    background-color: yellow; 
+    border: 1px solid silver
+}
