@@ -39,10 +39,10 @@ function FilterableProductTable({products}) {
 
 function SearchBar({ searchText, inStockOnly, onSearchTextChange, onInStockOnlyChange }) {
     return (
-        <div>
+        <div className="search-bar">
             <input 
                 type="text" 
-                placeholder="Search..." 
+                placeholder="Filter by..." 
                 value={searchText}
                 onChange={(e) => onSearchTextChange(e.target.value)}
             />
@@ -89,7 +89,8 @@ function ProductTable({ products, searchText, inStockOnly }) {
         rows.push(
         <ProductRow 
             key={product.name} 
-            product={product} />
+            product={product}
+            searchText={searchText} />
         );
     });
 
@@ -117,11 +118,29 @@ function ProductCategoryRow({ categoryName }) {
         </tr>
     );
 }
-function ProductRow({product}) {
+function ProductRow({product, searchText}) {
+
+    // No highlighting by default
+    let highlightedName = product.name;
+
+    // If there's anything to highlight...
+    if(searchText.length > 0
+        && product.name.toLowerCase().indexOf(searchText.toLowerCase()) !== -1
+    ){
+        // Highlight it
+        const indexStart = highlightedName.toLowerCase().indexOf(searchText.toLowerCase());
+        const indexEnd = indexStart + searchText.length;
+        highlightedName = highlightedName.substring(0, indexStart) 
+            + '<span style="background-color: yellow; border: 1px solid silver">'
+            + highlightedName.substring(indexStart, indexStart + searchText.length)
+            + '</span>'
+            + highlightedName.substring(indexEnd);
+    }
+
     return (
         <tr>
             <td style={{color: product.stocked ? 'black' : 'red'}}>
-                {product.name}
+                <div dangerouslySetInnerHTML={{ __html: highlightedName }} />
             </td>   
             <td>
                 {product.price}
