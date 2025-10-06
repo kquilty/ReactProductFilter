@@ -59,20 +59,29 @@ function SearchBar({ searchText, inStockOnly, onSearchTextChange, onInStockOnlyC
 function ProductTable({ products, searchText, inStockOnly }) {
     let rows = [];
     let lastCategory = null;
-
+    let totalRowsInCategory = 0;
     
     products.forEach((product) => {
 
 
         // Show the category if it has changed
         if (product.category !== lastCategory) {
+
+            // If no rows were added for the last category, remove it
+            if (lastCategory !== null && totalRowsInCategory === 0) {
+                rows.pop();
+            }
+            
             rows.push(
                 <ProductCategoryRow 
                     categoryName={product.category} 
                     key={product.category} />
             );
+            
             lastCategory = product.category;
+            totalRowsInCategory = 0;
         }
+
 
         // Filter by search text
         if (product.name.toLowerCase().indexOf(searchText.toLowerCase()) === -1) {
@@ -92,7 +101,14 @@ function ProductTable({ products, searchText, inStockOnly }) {
             product={product}
             searchText={searchText} />
         );
+
+        totalRowsInCategory++;
     });
+
+    // If no rows were added for the last category, remove it
+    if (lastCategory !== null && totalRowsInCategory === 0) {
+        rows.pop();
+    }
 
     return (
         <table className="product-table">
