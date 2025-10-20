@@ -10,3 +10,12 @@ body {
     border: 1px solid black;
     padding: 5px;
 }
+.search-bar {
+    margin-bottom: 10px;
+    display: flex; 
+    align-items: center;
+}
+.highlighted-text {
+    background-color: yellow; 
+    border: 1px solid silver
+}

@@ -49,10 +49,10 @@ function FilterableProductTable({products, onProductDelete}) {
 
 function SearchBar({ searchText, inStockOnly, onSearchTextChange, onInStockOnlyChange }) {
     return (
-        <div>
+        <div className="search-bar">
             <input 
                 type="text" 
-                placeholder="Search..." 
+                placeholder="Filter by..." 
                 value={searchText}
                 onChange={(e) => onSearchTextChange(e.target.value)}
             />
@@ -69,20 +69,29 @@ function SearchBar({ searchText, inStockOnly, onSearchTextChange, onInStockOnlyC
 function ProductTable({ products, searchText, inStockOnly, onProductDelete }) {
     let rows = [];
     let lastCategory = null;
-
+    let totalRowsInCategory = 0;
     
     products.forEach((product) => {
 
 
         // Show the category if it has changed
         if (product.category !== lastCategory) {
+
+            // If no rows were added for the last category, remove it
+            if (lastCategory !== null && totalRowsInCategory === 0) {
+                rows.pop();
+            }
+            
             rows.push(
                 <ProductCategoryRow 
                     categoryName={product.category} 
                     key={product.category} />
             );
+            
             lastCategory = product.category;
+            totalRowsInCategory = 0;
         }
+
 
         // Filter by search text
         if (product.name.toLowerCase().indexOf(searchText.toLowerCase()) === -1) {
@@ -100,9 +109,17 @@ function ProductTable({ products, searchText, inStockOnly, onProductDelete }) {
         <ProductRow 
             key={product.id} 
             product={product}
+            searchText={searchText}
             onProductDelete={onProductDelete} />
         );
+
+        totalRowsInCategory++;
     });
+
+    // If no rows were added for the last category, remove it
+    if (lastCategory !== null && totalRowsInCategory === 0) {
+        rows.pop();
+    }
 
     return (
         <table className="product-table">
@@ -131,11 +148,33 @@ function ProductCategoryRow({ categoryName }) {
         </tr>
     );
 }
-function ProductRow({product, onProductDelete}) {
+
+function ProductRow({product, searchText, onProductDelete}) {
+
+    // No highlighting by default
+    let highlightedName = product.name;
+
+    // If there's anything to highlight...
+    if(searchText.length > 0
+        && product.name.toLowerCase().indexOf(searchText.toLowerCase()) !== -1
+    ){
+        // Highlight it
+        const indexStart = highlightedName.toLowerCase().indexOf(searchText.toLowerCase());
+        highlightedName = (
+            <div>
+                {highlightedName.substring(0, indexStart)} 
+                <span className="highlighted-text">
+                    {highlightedName.substring(indexStart, indexStart + searchText.length)}
+                </span>
+                {highlightedName.substring(indexStart + searchText.length)}
+            </div>
+        );
+    }
+
     return (
         <tr>
             <td style={{color: product.stocked ? 'black' : 'red'}}>
-                {product.name}
+                {highlightedName}
             </td>   
             <td>
                 {product.price}
