@@ -1,16 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 
 
 export default function App() {
-    const [products, setProducts] = useState([
-        {id:1, category: "Fruits", price: "$1", stocked: true, name: "Apple"},
-        {id:2, category: "Fruits", price: "$1", stocked: true, name: "Dragonfruit"},
-        {id:3, category: "Fruits", price: "$2", stocked: false, name: "Passionfruit"},
-        {id:4, category: "Vegetables", price: "$2", stocked: true, name: "Spinach"},
-        {id:5, category: "Vegetables", price: "$4", stocked: false, name: "Pumpkin"},
-        {id:6, category: "Vegetables", price: "$1", stocked: true, name: "Peas"}
-    ]);
+    const [products, setProducts] = useState([]);
 
     const handleDeleteProduct = (productId) => {
         if (!window.confirm("Delete this product?")) {
@@ -20,6 +13,36 @@ export default function App() {
         setProducts(newProducts);
     };
 
+
+    // On page load, fetch products from the server
+    useEffect(() => {
+
+        console.log("Fetching products from server...");
+        fetch("http://localhost:8000/products")
+            .then(response => {
+
+                // Simulate network delay
+                /*
+                    return new Promise((resolve, reject) => {
+                        setTimeout(() => {
+                            response.json().then(resolve).catch(reject);
+                        }, 1000);
+                    });
+                */
+
+                return response.json();
+
+            })
+            .then((data) => {
+                console.log("Products fetched: " + data.length);
+                setProducts(data);
+            })
+            .catch(error => {
+                console.error("Error fetching products:", error);
+            });
+    }, []); // <--- [] means run only once on component mount
+
+    
     return (
         <FilterableProductTable products={products} onProductDelete={handleDeleteProduct} />
     );
@@ -70,7 +93,11 @@ function ProductTable({ products, searchText, inStockOnly, onProductDelete }) {
     let rows = [];
     let lastCategory = null;
     let totalRowsInCategory = 0;
-    
+
+    if ( typeof products === "undefined" || products.length === 0) {
+        return <div>No products available.</div>;
+    }
+
     products.forEach((product) => {
 
 
@@ -123,18 +150,22 @@ function ProductTable({ products, searchText, inStockOnly, onProductDelete }) {
 
     return (
         <table className="product-table">
-            <tr>
-                <td>
-                    Name
-                </td>
-                <td>
-                    Price
-                </td>
-                <td>
-                    (admin)
-                </td>
-            </tr>
-            {rows}
+            <thead>
+                <tr>
+                    <td>
+                        Name
+                    </td>
+                    <td>
+                        Price
+                    </td>
+                    <td>
+                        (admin)
+                    </td>
+                </tr>
+            </thead>
+            <tbody>
+                {rows}
+            </tbody>
         </table>
     );
 }
