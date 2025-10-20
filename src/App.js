@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 
 export default function App() {
     const [products, setProducts] = useState([]);
+    const [isLoadingProducts, setIsLoadingProducts] = useState(true);//<-- start as loading (since we'll be firing this off right away)
 
     const handleDeleteProduct = (productId) => {
         if (!window.confirm("Delete this product?")) {
@@ -13,42 +14,59 @@ export default function App() {
         setProducts(newProducts);
     };
 
+    const fetchProductsFromServer = () => {
+        console.log("Fetching products from server...");
+        setIsLoadingProducts(true);
+        fetch("http://localhost:8000/products")
+        .then(response => {
+
+            // Simulate network delay
+            ///*
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        response.json().then(resolve).catch(reject);
+                    }, 1000);
+                });
+            //*/
+
+            //return response.json();
+
+        })
+        .then((data) => {
+            console.log("Products fetched: " + data.length);
+            setProducts(data);
+            setIsLoadingProducts(false);
+        })
+        .catch(error => {
+            console.error("Error fetching products:", error);
+            setIsLoadingProducts(false);
+        });
+    }
 
     // On page load, fetch products from the server
     useEffect(() => {
-
-        console.log("Fetching products from server...");
-        fetch("http://localhost:8000/products")
-            .then(response => {
-
-                // Simulate network delay
-                /*
-                    return new Promise((resolve, reject) => {
-                        setTimeout(() => {
-                            response.json().then(resolve).catch(reject);
-                        }, 1000);
-                    });
-                */
-
-                return response.json();
-
-            })
-            .then((data) => {
-                console.log("Products fetched: " + data.length);
-                setProducts(data);
-            })
-            .catch(error => {
-                console.error("Error fetching products:", error);
-            });
+        fetchProductsFromServer();
     }, []); // <--- [] means run only once on component mount
 
-    
+
     return (
-        <FilterableProductTable products={products} onProductDelete={handleDeleteProduct} />
+        <>
+            <FilterableProductTable 
+                products={products} 
+                onProductDelete={handleDeleteProduct} 
+                isLoadingProducts={isLoadingProducts} />
+
+            { !isLoadingProducts && 
+                <>
+                    <br /><br />
+                    <button onClick={() => fetchProductsFromServer()}>Reload List</button>
+                </>
+            }
+        </>
     );
 }
 
-function FilterableProductTable({products, onProductDelete}) {
+function FilterableProductTable({products, onProductDelete, isLoadingProducts}) {
     const [searchText, setSearchText] = useState("");
     const [inStockOnly, setInStockOnly] = useState(false);
 
@@ -60,12 +78,19 @@ function FilterableProductTable({products, onProductDelete}) {
                 onSearchTextChange={setSearchText}
                 onInStockOnlyChange={setInStockOnly}
             />
-            <ProductTable 
-                products={products}
-                searchText={searchText}
-                inStockOnly={inStockOnly} 
-                onProductDelete={onProductDelete}
-            />
+            { isLoadingProducts 
+                ?
+                    <div>Loading products...</div>
+                :
+                    <>
+                        <ProductTable 
+                            products={products}
+                            searchText={searchText}
+                            inStockOnly={inStockOnly} 
+                            onProductDelete={onProductDelete}
+                        />
+                    </>
+            }
         </>
     );
 }
