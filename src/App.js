@@ -1,22 +1,31 @@
 import { useState } from "react";
 
-const PRODUCTS = [
-    {category: "Fruits", price: "$1", stocked: true, name: "Apple"},
-    {category: "Fruits", price: "$1", stocked: true, name: "Dragonfruit"},
-    {category: "Fruits", price: "$2", stocked: false, name: "Passionfruit"},
-    {category: "Vegetables", price: "$2", stocked: true, name: "Spinach"},
-    {category: "Vegetables", price: "$4", stocked: false, name: "Pumpkin"},
-    {category: "Vegetables", price: "$1", stocked: true, name: "Peas"}
-];
+
 
 export default function App() {
-    
+    const [products, setProducts] = useState([
+        {id:1, category: "Fruits", price: "$1", stocked: true, name: "Apple"},
+        {id:2, category: "Fruits", price: "$1", stocked: true, name: "Dragonfruit"},
+        {id:3, category: "Fruits", price: "$2", stocked: false, name: "Passionfruit"},
+        {id:4, category: "Vegetables", price: "$2", stocked: true, name: "Spinach"},
+        {id:5, category: "Vegetables", price: "$4", stocked: false, name: "Pumpkin"},
+        {id:6, category: "Vegetables", price: "$1", stocked: true, name: "Peas"}
+    ]);
+
+    const handleDeleteProduct = (productId) => {
+        if (!window.confirm("Delete this product?")) {
+            return;
+        }
+        let newProducts = products.filter(product => product.id !== productId);
+        setProducts(newProducts);
+    };
+
     return (
-        <FilterableProductTable products={PRODUCTS} />
+        <FilterableProductTable products={products} onProductDelete={handleDeleteProduct} />
     );
 }
 
-function FilterableProductTable({products}) {
+function FilterableProductTable({products, onProductDelete}) {
     const [searchText, setSearchText] = useState("");
     const [inStockOnly, setInStockOnly] = useState(false);
 
@@ -32,6 +41,7 @@ function FilterableProductTable({products}) {
                 products={products}
                 searchText={searchText}
                 inStockOnly={inStockOnly} 
+                onProductDelete={onProductDelete}
             />
         </>
     );
@@ -56,7 +66,7 @@ function SearchBar({ searchText, inStockOnly, onSearchTextChange, onInStockOnlyC
     );
 }
 
-function ProductTable({ products, searchText, inStockOnly }) {
+function ProductTable({ products, searchText, inStockOnly, onProductDelete }) {
     let rows = [];
     let lastCategory = null;
 
@@ -88,8 +98,9 @@ function ProductTable({ products, searchText, inStockOnly }) {
         // Show the product
         rows.push(
         <ProductRow 
-            key={product.name} 
-            product={product} />
+            key={product.id} 
+            product={product}
+            onProductDelete={onProductDelete} />
         );
     });
 
@@ -102,6 +113,9 @@ function ProductTable({ products, searchText, inStockOnly }) {
                 <td>
                     Price
                 </td>
+                <td>
+                    (admin)
+                </td>
             </tr>
             {rows}
         </table>
@@ -111,13 +125,13 @@ function ProductTable({ products, searchText, inStockOnly }) {
 function ProductCategoryRow({ categoryName }) {
     return (
         <tr>
-            <th colSpan="2">
+            <th colSpan="3">
                 {categoryName}
             </th>
         </tr>
     );
 }
-function ProductRow({product}) {
+function ProductRow({product, onProductDelete}) {
     return (
         <tr>
             <td style={{color: product.stocked ? 'black' : 'red'}}>
@@ -125,6 +139,9 @@ function ProductRow({product}) {
             </td>   
             <td>
                 {product.price}
+            </td>
+            <td>
+                <button onClick={() => onProductDelete(product.id)}>Delete</button>
             </td>
         </tr>
     );
